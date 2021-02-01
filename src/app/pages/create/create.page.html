@@ -50,15 +50,12 @@
           </ion-input>
           <ion-button
             *ngIf="admin && questionTemp[idx].mode != '1' "
-            (click)="addAnswers(idx)"
-            expand="block">
+            (click)="addAnswers(idx)">
             <ion-icon name="add-circle-outline"></ion-icon>
           </ion-button>
           <ion-button
           *ngIf="admin"
-          (click)="removeQuestion(idx)"
-          expand="block"
-        >
+          (click)="removeQuestion(idx)">
           <ion-icon name="add"></ion-icon>
           </ion-button>
             <ion-button
