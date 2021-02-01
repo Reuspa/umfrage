@@ -1,0 +1,30 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{survey.name}}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)= "save()">Speichern</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-list>
+    <ion-item lines="full">
+      <ion-label >Title: </ion-label>
+      <ion-input [readonly]="!inputDisabled" [(ngModel)]="survey.name"></ion-input>
+    </ion-item>
+    <ion-item lines="full">
+      <ion-label position="stacked">Beschreibung: </ion-label>
+      <ion-textarea [readonly]="!inputDisabled" [(ngModel)]="survey.description"></ion-textarea>
+    </ion-item>
+  </ion-list>
+  <ion-list >
+    <ion-item-divider>Fragen</ion-item-divider>
+    <ion-item *ngFor="let question of questions" lines = "full">
+      <ion-label>{{question.name}}</ion-label>
+      <ion-checkbox [(ngModel)] = "question.answer"></ion-checkbox>
+    </ion-item>
+  </ion-list>
+</ion-content>

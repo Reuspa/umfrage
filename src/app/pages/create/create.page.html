@@ -1,0 +1,207 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{title}}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="adminFlag()">
+        <ion-icon name="create"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-list lines="full">
+      <ion-item>
+        <ion-input
+          [readonly]="!admin"
+          required
+          [(ngModel)]="survey.name"
+          placeholder="Name"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          [readonly]="!admin"
+          required
+          [(ngModel)]="survey.description"
+          placeholder="Beschreibung"
+        ></ion-input>
+      </ion-item>
+    </ion-list>
+  </ion-grid>
+
+  <ion-item-divider color="white"></ion-item-divider>
+  <div [ngSwitch]="view">
+    <div *ngSwitchCase="0">
+      <div *ngFor="let count of questionTemp; let idx = index">
+        <ion-item lines= "full"> 
+          <ion-input
+            [readonly]="!admin"
+            type="text"
+            [(ngModel)]="questionTemp[idx].question"
+            placeholder=" Frage"
+            required
+          >
+            {{idx + 1}}.
+          </ion-input>
+          <ion-button
+            *ngIf="admin && questionTemp[idx].mode != '1' "
+            (click)="addAnswers(idx)"
+            expand="block">
+            <ion-icon name="add-circle-outline"></ion-icon>
+          </ion-button>
+          <ion-button
+          *ngIf="admin"
+          (click)="removeQuestion(idx)"
+          expand="block"
+        >
+          <ion-icon name="add"></ion-icon>
+          </ion-button>
+            <ion-button
+            *ngIf="admin"
+            color="danger"
+            (click)="removeQuestion(idx)"
+            expand="block"
+          >
+            <ion-icon name="trash"></ion-icon>
+            </ion-button>
+        </ion-item>
+        <ion-list [ngSwitch]="questionTemp[idx].mode">
+          <div *ngSwitchCase="1">
+            <ion-list *ngIf="!admin">
+              <ion-radio-group [(ngModel)]="questionTemp[idx].answer">
+                <ion-item >
+                  <ion-label>Ja</ion-label>
+                  <ion-radio mode="md" slot="end" [value]="true"></ion-radio>
+                </ion-item>
+                <ion-item >
+                  <ion-label>Nein</ion-label>
+                  <ion-radio mode="md" slot="end" [value]="false"></ion-radio>
+                </ion-item>
+              </ion-radio-group>
+            </ion-list>
+          </div>
+          <div *ngSwitchCase="2">
+            <ion-list *ngIf="admin">
+              <ion-item
+                *ngFor="let count of questionTemp[idx].answers; let idy = index"
+              >
+                <ion-input
+                  [readonly]="!admin"
+                  [(ngModel)]="questionTemp[idx].answers[idy].name"
+                  placeholder="Antwort"
+                  >{{idy +1}}.
+                </ion-input>
+                <ion-button
+                  color="danger"
+                  (click)="removeAnswers(idx, idy)"
+                  expand="block"
+                >
+                  <ion-icon name="trash"></ion-icon>
+                </ion-button>
+              </ion-item>
+            </ion-list>
+            <ion-list *ngIf="!admin">
+              <ion-item
+                *ngFor="let count of questionTemp[idx].answers; let idy = index"
+              >
+                <ion-label
+                  >{{idy +1}}.
+                  {{questionTemp[idx].answers[idy].name}}</ion-label
+                >
+                <ion-checkbox
+                  [(ngModel)]="questionTemp[idx]['answers'][idy].answer"
+                ></ion-checkbox>
+              </ion-item>
+            </ion-list>
+          </div>
+          <div *ngSwitchCase="3">
+            <ion-list *ngIf="admin">
+              <ion-item
+                *ngFor="let count of questionTemp[idx].answers; let idy = index"
+              >
+                <ion-input
+                  [readonly]="!admin"
+                  [(ngModel)]="questionTemp[idx].answers[idy].name"
+                  placeholder="Antwort"
+                  >{{idy +1}}.
+                </ion-input>
+                <ion-button
+                  *ngIf="admin"
+                  color="danger"
+                  (click)="removeAnswers(idx, idy)"
+                  expand="block"
+                >
+                  <ion-icon name="trash"></ion-icon>
+                </ion-button>
+              </ion-item>
+            </ion-list>
+
+            <ion-list *ngIf="!admin">
+              <ion-radio-group [(ngModel)]="questionTemp[idx].answer">
+                <div
+                  *ngFor="let count of questionTemp[idx].answers; let idy = index"
+                >
+                  <ion-item >
+                    <ion-label
+                      >{{idy +1}}.
+                      {{questionTemp[idx].answers[idy].name}}</ion-label
+                    >
+                    <ion-radio
+                      mode="md"
+                      slot="end"
+                      [value]="questionTemp[idx].answers[idy].name"
+                    ></ion-radio>
+                  </ion-item>
+                </div>
+              </ion-radio-group>
+            </ion-list>
+          </div>
+          <div *ngSwitchDefault></div>
+
+          <ion-item-divider color="white"></ion-item-divider>
+        </ion-list>
+      </div>
+    </div>
+    <div *ngSwitchCase="1">
+      <ion-item lines = "full" >Ergebnisse</ion-item>
+      <div *ngFor="let count of questionTemp; let idx = index">
+        <ion-item lines = "full">
+          <ion-input
+            [readonly]="!admin"
+            type="text"
+            [(ngModel)]="questionTemp[idx].question">
+            {{idx + 1}}.
+          </ion-input>
+        </ion-item>
+      </div>
+    </div>
+  </div>
+</ion-content>
+
+<ion-footer>
+  <ion-button *ngIf="admin" (click)="actionSheet()" expand="block">
+    <ion-icon name="add-circle-outline"></ion-icon>
+  </ion-button>
+  <ion-button (click)="save()" expand="block">
+    <ion-icon name="save"></ion-icon>
+  </ion-button>
+  <ion-button *ngIf="!admin" (click)="viewChange()" expand="block">
+    <ion-icon name="eye"></ion-icon>
+  </ion-button>
+  <!-- <ion-button *ngIf="!new" (click)="updateSurvey()" expand="block">
+    <ion-icon name="save"></ion-icon>
+  </ion-button> -->
+
+
+  <ion-item-divider>Admin</ion-item-divider>
+  <ion-button (click)="viewChange()"> ViewChange </ion-button>
+  <ion-button (click)="ResultTest()"> ResultTest </ion-button>
+  <ion-button (click)="Log()"> Log </ion-button>
+  <ion-button (click)="adminFlag()"> admin </ion-button>
+  <ion-button (click)="actionSheet()"> datatest </ion-button>
+</ion-footer>
