@@ -4,16 +4,22 @@
       <ion-back-button></ion-back-button>
     </ion-buttons>
     <ion-title>{{title}}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="adminFlag()">
+    <ion-fab vertical="center" horizontal="end" slot="start">
+      <ion-fab-button>
         <ion-icon name="create"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+      </ion-fab-button>
+      <ion-fab-list side="start">
+        <ion-fab-button (click)="adminFlag()"><ion-icon name="create"></ion-icon></ion-fab-button>
+        <ion-fab-button (click)="actionSheet()"><ion-icon name="add"></ion-icon></ion-fab-button>
+      </ion-fab-list>
+    </ion-fab>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <ion-grid>
+    <ion-row>
+      <ion-col size = "11">
     <ion-list lines="full">
       <ion-item>
         <ion-input
@@ -32,41 +38,41 @@
         ></ion-input>
       </ion-item>
     </ion-list>
+  </ion-col>
+  </ion-row>
   </ion-grid>
 
   <ion-item-divider color="white"></ion-item-divider>
   <div [ngSwitch]="view">
     <div *ngSwitchCase="0">
       <div *ngFor="let count of questionTemp; let idx = index">
-        <ion-item lines= "full"> 
+        <ion-grid>
+          <ion-row>
+            <ion-col size = "10" >
+              <ion-item>
           <ion-input
             [readonly]="!admin"
             type="text"
             [(ngModel)]="questionTemp[idx].question"
-            placeholder=" Frage"
-            required
-          >
+            placeholder=" Frage">
             {{idx + 1}}.
           </ion-input>
-          <ion-button
-            *ngIf="admin && questionTemp[idx].mode != '1' "
-            (click)="addAnswers(idx)">
-            <ion-icon name="add-circle-outline"></ion-icon>
-          </ion-button>
-          <ion-button
-          *ngIf="admin"
-          (click)="removeQuestion(idx)">
-          <ion-icon name="add"></ion-icon>
-          </ion-button>
-            <ion-button
-            *ngIf="admin"
-            color="danger"
-            (click)="removeQuestion(idx)"
-            expand="block"
-          >
-            <ion-icon name="trash"></ion-icon>
-            </ion-button>
         </ion-item>
+        </ion-col>
+        <ion-col >
+          <ion-fab *ngIf="admin">
+            <ion-fab-button>
+              <ion-icon name="create"></ion-icon>
+            </ion-fab-button>
+            <ion-fab-list side="start">
+              <ion-fab-button color="danger" (click)="removeQuestion(idx)"><ion-icon name="trash"></ion-icon></ion-fab-button>
+              <ion-fab-button color="danger" (click)="actionSheet()"><ion-icon name="add"></ion-icon></ion-fab-button>
+              <ion-fab-button color="primary" (click)="addAnswers()"><ion-icon name="add"></ion-icon></ion-fab-button>
+            </ion-fab-list>
+          </ion-fab>
+        </ion-col>
+      </ion-row>
+      </ion-grid>
         <ion-list [ngSwitch]="questionTemp[idx].mode">
           <div *ngSwitchCase="1">
             <ion-list *ngIf="!admin">
