@@ -1,3 +1,4 @@
+import { ResultPage } from './../pages/result/result.page';
 import { Injectable } from "@angular/core";
 
 export interface SURVEY {
@@ -14,99 +15,76 @@ export class DataService {
     name: "",
     description: "",
   };
-  // surveyArray = [];
-  surveyArray = [
-    {
-      name: "Umfrage 1",
-      description: "Test der Funktionen",
-      questions:
-        '[{"question":"Ja/Nein Frage","mode":"1","answers":"","answer":false},{"question":"Multi Choice","mode":"2","answers":[{"name":"1111","answer":"false"},{"name":"2222","answer":true},{"name":"3333","answer":"false"},{"name":"4444","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"1111"},{"name":"2222"},{"name":"3333"},{"name":"444","answer":""},{"name":"555","answer":""}],"answer":"1111"}]',
-    },
-    {
-      name: "Test 2",
-      description: "Testen der erstellung der ergebnisse",
-      questions:
-        '[{"question":"test Frage 1","mode":"1","answers":"","answer":false},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":false},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"111"}]',
-    },
-  ];
-  // result = [
-  //   {
-  //     name: "Test 2",
-  //     description: "Testen der erstellung der ergebnisse",
-  //     questions:
-  //       '[{"question":"test Frage 1","mode":"1","answers":"","answer":false},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":true},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"222"}]',
-  //   },
-  //   {
-  //     name: "Test 2",
-  //     description: "Testen der erstellung der ergebnisse",
-  //     questions:
-  //       '[{"question":"test Frage 1","mode":"1","answers":"","answer":true},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":true},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"111"}]',
-  //   },
-  //   {
-  //     name: "Test 2",
-  //     description: "Testen der erstellung der ergebnisse",
-  //     questions:
-  //       '[{"question":"test Frage 1","mode":"1","answers":"","answer":true},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":true},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"111"}]',
-  //   },
-  //   {
-  //     name: "Test 2",
-  //     description: "Testen der erstellung der ergebnisse",
-  //     questions:
-  //       '[{"question":"test Frage 1","mode":"1","answers":"","answer":true},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":true},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"111"}]',
-  //   },
-  // ];
-  result = [];
+  surveyArray = [{"name":"Dinnerparty","description":"sdasd","questions":"[{\"question\":\"Trinken\",\"mode\":\"3\",\"answers\":[{\"name\":\"Ja\"},{\"name\":\"Nein\"}],\"answer\":\"\"},{\"question\":\"Essen?\",\"mode\":\"2\",\"answers\":[{\"name\":\"vor\",\"answer\":\"false\"},{\"name\":\"Haupt\",\"answer\":\"false\"},{\"name\":\"dessert\",\"answer\":\"false\"}]}]","Id":"_35vmdm2uh"}]
+
+
+  result = [{"Id":"_35vmdm2uh","Trinken":{"mode":"3","Ja":0,"Nein":0},"Essen?":{"mode":"2","vor":0,"Haupt":0,"dessert":0}}];
   constructor() {}
 
   getData() {
     return this.surveyArray;
   }
   addSurvey(survey) {
+    survey.Id = '_' + Math.random().toString(36).substr(2, 9);
     this.surveyArray.push(survey);
   }
   updateSurvey(survey) {
     this.surveyArray.forEach(function (value, index, object) {
-      if (value.name === survey.name) {
-        object.splice(index, 1);
+      if (value.Id === survey.Id) {
+        console.log(object[index]);
+        object[index] = survey;
       }
     });
-    this.surveyArray.push(survey);
   }
-  addResult(survey) {
-    this.result.push(survey);
-  }
-  getResults(survey) {
-    let results = {questions:[]};
-    let mode1 = [];
-    // let mode1 = { name: '', count: 0, trueCount: 0, falseCount: 0 };
-    // let mode2 = {name: '', count: 0, answerCount: {}, };
-    // let mode3 = { name: '', count: 0 };
-    for (const result of this.result) {
-      // let mode1 = { name: '', count: 0, trueCount: 0, falseCount: 0 };
-      // console.log('for result: ', result);
-      if (result.name === survey.name) {
-        let temp = (JSON.parse(result.questions));
-        for ( const i of temp){
-          // console.log(i);
-          switch (i.mode){
-            case "1":
-              mode1.push(i);
-              break;
-            case "2":
-              break;
-            case "3":
-              break;
+  createResult(survey) {
+      let temp: any = {};
+      temp.Id = survey.Id;
+      let tempQuestion = JSON.parse(survey.questions);
+      for( let i of tempQuestion){
+        if ( i.mode ==="3"){
+          let temp2: any  = {};
+          temp2.mode = i.mode;
+          temp2.count = 0;
+          for ( let y of i.answers){
+            temp2[y.name] = 0;
           }
+          temp[i.question] = temp2;
+        }
+        if ( i.mode ==="2"){
+          let temp2: any  = {};
+          temp2.mode = i.mode;
+          temp2.count = 0;
+          for ( let y of i.answers){
+            temp2[y.name] = 0;
+          }
+          temp[i.question] = temp2;
         }
       }
-    }
-    mode1.forEach( (v) => console.log(v));
-    console.log(mode1);
-    console.log(results);
+      console.log(temp);
+      this.result.push(temp);
+  }
+  addResult(questions){
+    // console.log("questions", questions);
+    for ( const temp of questions){
+      if ( temp.mode === "3"){
+        this.result.forEach(function (value, index, object){
+          if (temp.question in value){
+           value[temp.question][temp.answer] += 1;
+          }
+          // console.log('temp.name:', temp.question);
+          // console.log('temp.answer', temp.answer);
+        });
+      }
+  }
+    console.log(this.result);
+  }
+
+  getResults(survey) {
+
   }
   Log() {
     console.log("array", JSON.stringify(this.surveyArray));
-    console.log("result", this.result);
+    console.log("result", JSON.stringify(this.result));
   }
   testMode1() {}
 }

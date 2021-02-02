@@ -50,6 +50,7 @@ export class CreatePage implements OnInit {
     this.survey.questions = (JSON.stringify(this.questionTemp));
     if (this.new && this.admin) {
       await this.DataService.addSurvey(this.survey);
+      await this.DataService.createResult(this.survey);
       console.log("new add");
       this.admin = false;
       if (!this.new){
@@ -61,7 +62,7 @@ export class CreatePage implements OnInit {
       console.log("update Survey");
       this.admin = false;
     }else{
-      await this.DataService.addResult(this.survey);
+      await this.DataService.addResult(this.questionTemp);
       console.log("Added Result");
       this.navController.navigateBack('/overview');
     }
