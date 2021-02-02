@@ -17,7 +17,7 @@ export class CreatePage implements OnInit {
   }
   new = true;
   admin = true;
-  questionTemp: any = [{question: '', mode: '1', answers: ''}];
+  questionTemp: any = [{question: '', mode: '3', answers: [{name: 'Ja'}, {name: 'Nein'}], answer: ''}];
   title = 'Neue Umfrage';
   view = "0";
   buttonView = false;
@@ -55,6 +55,7 @@ export class CreatePage implements OnInit {
       if (!this.new){
       this.navController.navigateBack('/overview');
       }
+      this.new = false;
     } else if (!this.new && this.admin){
       await this.DataService.updateSurvey(this.survey);
       console.log("update Survey");
@@ -81,7 +82,7 @@ export class CreatePage implements OnInit {
     switch (mode){
       case '1': this.questionTemp.push({question: '', mode: '1', answers: ''}); break;
       case '2': this.questionTemp.push({question: '', mode: '2', answers: [{name: '', answer: 'false'}, {name: '', answer: 'false'}, {name: '', answer: 'false'}]}); break;
-      case '3': this.questionTemp.push({question: '', mode: '3', answers: [{name: ''}, {name: ''}, {name: ''}], answer: ''}); break;
+      case '3': this.questionTemp.push({question: '', mode: '3', answers: [{name: 'Ja'}, {name: 'Nein'}], answer: ''}); break;
     }
     // this.questionTemp.push({question:'', mode: '', answers: [{name: '', answer: ''}]});
     // console.log(this.questionTemp);
@@ -89,10 +90,11 @@ export class CreatePage implements OnInit {
   addAnswers(idx){
     this.questionTemp[idx].answers.push({name: '', answer: ''});
   }
-  removeAnswers(idx, idy){
-    console.log(this.questionTemp[idx]);
-    this.questionTemp[idx].answers.splice(idy,1);
-    console.log(this.questionTemp[idx]);
+  removeAnswers(idx){
+    // console.log(this.questionTemp[idx]);
+    // this.questionTemp[idx].answers.splice(idy,1);
+    // console.log(this.questionTemp[idx]);
+    this.questionTemp[idx].answers.pop();
   }
   removeQuestion(idx){
     const actionSheet = document.createElement('ion-action-sheet');
@@ -143,28 +145,32 @@ export class CreatePage implements OnInit {
     const actionSheet = document.createElement('ion-action-sheet');
 
     actionSheet.header = 'Frage Hinzufügen';
-    actionSheet.buttons = [{
-      text: 'Ja/Nein Frage',
-      icon: 'add-circle-outline',
-      handler: () => {
-        console.log('Added ja/nein');
-        this.addQuestion('1');
-      }
-    }, {
+    actionSheet.buttons = [
+      {
+        text: 'Auswahl Frage',
+        icon: 'add-circle-outline',
+        handler: () => {
+          console.log('Play clicked');
+          this.addQuestion('3');
+        }
+      },
+    //   {
+    //   text: 'Ja/Nein Frage',
+    //   icon: 'add-circle-outline',
+    //   handler: () => {
+    //     console.log('Added ja/nein');
+    //     this.addQuestion('1');
+    //   }
+    // },
+     {
       text: 'Multiply Choice',
       icon: 'add-circle-outline',
       handler: () => {
         console.log('Multiply Choice');
         this.addQuestion('2');
       }
-    }, {
-      text: 'Auswahl Frage',
-      icon: 'add-circle-outline',
-      handler: () => {
-        console.log('Play clicked');
-        this.addQuestion('3');
-      }
-    },{
+    }, 
+    {
       text: 'Abbruch',
       icon: 'close',
       role: 'cancel',

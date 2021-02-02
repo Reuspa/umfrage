@@ -14,6 +14,7 @@ export class DataService {
     name: "",
     description: "",
   };
+  // surveyArray = [];
   surveyArray = [
     {
       name: "Umfrage 1",
@@ -28,33 +29,33 @@ export class DataService {
         '[{"question":"test Frage 1","mode":"1","answers":"","answer":false},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":false},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"111"}]',
     },
   ];
-  result = [
-    {
-      name: "Test 2",
-      description: "Testen der erstellung der ergebnisse",
-      questions:
-        '[{"question":"test Frage 1","mode":"1","answers":"","answer":false},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":true},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"222"}]',
-    },
-    {
-      name: "Test 2",
-      description: "Testen der erstellung der ergebnisse",
-      questions:
-        '[{"question":"test Frage 1","mode":"1","answers":"","answer":true},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":true},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"111"}]',
-    },
-    {
-      name: "Test 2",
-      description: "Testen der erstellung der ergebnisse",
-      questions:
-        '[{"question":"test Frage 1","mode":"1","answers":"","answer":true},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":true},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"111"}]',
-    },
-    {
-      name: "Test 2",
-      description: "Testen der erstellung der ergebnisse",
-      questions:
-        '[{"question":"test Frage 1","mode":"1","answers":"","answer":true},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":true},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"111"}]',
-    },
-  ];
-  // result = [];
+  // result = [
+  //   {
+  //     name: "Test 2",
+  //     description: "Testen der erstellung der ergebnisse",
+  //     questions:
+  //       '[{"question":"test Frage 1","mode":"1","answers":"","answer":false},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":true},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"222"}]',
+  //   },
+  //   {
+  //     name: "Test 2",
+  //     description: "Testen der erstellung der ergebnisse",
+  //     questions:
+  //       '[{"question":"test Frage 1","mode":"1","answers":"","answer":true},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":true},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"111"}]',
+  //   },
+  //   {
+  //     name: "Test 2",
+  //     description: "Testen der erstellung der ergebnisse",
+  //     questions:
+  //       '[{"question":"test Frage 1","mode":"1","answers":"","answer":true},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":true},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"111"}]',
+  //   },
+  //   {
+  //     name: "Test 2",
+  //     description: "Testen der erstellung der ergebnisse",
+  //     questions:
+  //       '[{"question":"test Frage 1","mode":"1","answers":"","answer":true},{"question":"Multi test","mode":"2","answers":[{"name":"111","answer":true},{"name":"222","answer":false},{"name":"333","answer":true}]},{"question":"Auswahl","mode":"3","answers":[{"name":"111"},{"name":"222"},{"name":"333"}],"answer":"111"}]',
+  //   },
+  // ];
+  result = [];
   constructor() {}
 
   getData() {
