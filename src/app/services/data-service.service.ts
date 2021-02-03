@@ -5,6 +5,8 @@ export interface SURVEY {
   name: string;
   description: string;
   questions?: string;
+  Id?: string;
+  lastDate?: any;
 }
 
 @Injectable({
@@ -15,10 +17,10 @@ export class DataService {
     name: "",
     description: "",
   };
-  surveyArray = [{"name":"Dinnerparty","description":"sdasd","questions":"[{\"question\":\"Trinken\",\"mode\":\"3\",\"answers\":[{\"name\":\"Ja\"},{\"name\":\"Nein\"}],\"answer\":\"\"},{\"question\":\"Essen?\",\"mode\":\"2\",\"answers\":[{\"name\":\"vor\",\"answer\":\"false\"},{\"name\":\"Haupt\",\"answer\":\"false\"},{\"name\":\"dessert\",\"answer\":\"false\"}]}]","Id":"_35vmdm2uh"}]
+  surveyArray = [{"name":"Dinnerparty","description":"Umfrage zur Dinnerparty am 30/02/2021","questions":"[{\"question\":\"Gang Auswahl \",\"mode\":\"2\",\"answers\":[{\"name\":\"Vorspeise\",\"answer\":\"false\"},{\"name\":\"Hauptspeise\",\"answer\":\"false\"},{\"name\":\"Dessert\",\"answer\":\"false\"}]},{\"question\":\"Hauptgericht\",\"mode\":\"3\",\"answers\":[{\"name\":\"Fisch\"},{\"name\":\"Rind\"},{\"name\":\"Vegetarisch\",\"answer\":\"\"},{\"name\":\"Vegan\",\"answer\":\"\"}],\"answer\":\"\"},{\"question\":\"Alkohol ?\",\"mode\":\"3\",\"answers\":[{\"name\":\"Ja\"},{\"name\":\"Nein\"}],\"answer\":\"\"}]","Id":"_o5yjb70g5","lastDate":"2021-02-23T12:33:56.458+01:00"}];
 
 
-  result = [{"Id":"_35vmdm2uh","Trinken":{"mode":"3","Ja":0,"Nein":0},"Essen?":{"mode":"2","vor":0,"Haupt":0,"dessert":0}}];
+  result = [{"Id":"_o5yjb70g5","Gang Auswahl ":{"mode":"2","count":0,"Vorspeise":0,"Hauptspeise":0,"Dessert":0},"Alkohol ?":{"mode":"3","Ja":0,"Nein":0},"Hauptgericht":{"mode":"3","count":0,"Fisch":0,"Rind":0,"Vegetarisch":0,"Vegan":0}}];
   constructor() {}
 
   getData() {
@@ -75,12 +77,23 @@ export class DataService {
           // console.log('temp.answer', temp.answer);
         });
       }
+      if ( temp.mode === "2"){
+        this.result.forEach(function (value, index, object){
+          if (temp.question in value){
+            console.log("value", value);
+            console.log("temp", temp);
+            console.log('isin :', value[temp.answers]);
+           }
+          console.log('value:', temp.question);
+        });
+        
+      }
   }
     console.log(this.result);
   }
 
-  getResults(survey) {
-
+  getResults() {
+    return this.result;
   }
   Log() {
     console.log("array", JSON.stringify(this.surveyArray));

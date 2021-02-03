@@ -4,7 +4,7 @@
       <ion-back-button  text="zurück"></ion-back-button>
     </ion-buttons>
     <ion-title>{{title}}</ion-title>
-    <ion-fab vertical="center" horizontal="end" slot="start">
+    <ion-fab *ngIf="admin" vertical="center" horizontal="end" slot="start">
       <ion-fab-button>
         <ion-icon name="create"></ion-icon>
       </ion-fab-button>
@@ -23,9 +23,16 @@
       <ion-col size="12">
         <ion-list lines="full">
           <ion-item>
-            <ion-input [readonly]="!admin" [(ngModel)]="survey.name" placeholder="Name"></ion-input></ion-item>
+            <ion-label>Title: </ion-label>
+            <ion-input [readonly]="!admin" [(ngModel)]="survey.name"></ion-input>
+          </ion-item>
           <ion-item>
-            <ion-input [readonly]="!admin" [(ngModel)]="survey.description" placeholder="Beschreibung"></ion-input>
+            <ion-label  position="floating">Beschreibung: </ion-label>
+            <ion-textarea [readonly]="!admin" [(ngModel)]="survey.description"></ion-textarea>
+          </ion-item>
+          <ion-item>
+            <ion-label>Bis zum:</ion-label>
+            <ion-datetime [readonly]="!admin" display-format="DD/MM/YYYY" min="2020" max="2022" [(ngModel)]="survey.lastDate"></ion-datetime>
           </ion-item>
         </ion-list>
       </ion-col>
@@ -35,6 +42,7 @@
     </ion-row>
   <div [ngSwitch]="view">
     <div *ngSwitchCase="0">
+      <ion-item-divider color="primary" no-lines>Fragen:</ion-item-divider>
       <div *ngFor="let count of questionTemp; let idx = index">
           <ion-row>
             <ion-col size="10">
@@ -57,7 +65,7 @@
               <div *ngSwitchCase="2">
                 <ion-item *ngFor="let count of questionTemp[idx].answers; let idy = index" lines ="full">
                   <ion-input *ngIf="admin" [(ngModel)]="questionTemp[idx].answers[idy].name" placeholder="Antwort"></ion-input>
-                  <ion-label *ngIf="!admin"> {{questionTemp[idx].answers[idy].name}}</ion-label>
+                  <ion-label *ngIf="!admin">{{idy +1}}. {{questionTemp[idx].answers[idy].name}}</ion-label>
                   <ion-checkbox *ngIf="!admin" slot="end" [(ngModel)]="questionTemp[idx]['answers'][idy].answer"></ion-checkbox>
                 </ion-item>
             </div>
@@ -65,7 +73,7 @@
               <ion-radio-group [(ngModel)]="questionTemp[idx].answer">
                 <ion-item *ngFor="let count of questionTemp[idx].answers; let idy = index" lines ="full">
                   <ion-input *ngIf="admin" [(ngModel)]="questionTemp[idx].answers[idy].name" placeholder="Antwort"></ion-input>
-                  <ion-label *ngIf="!admin"> {{questionTemp[idx].answers[idy].name}}</ion-label>
+                  <ion-label *ngIf="!admin">{{idy +1}}. {{questionTemp[idx].answers[idy].name}}</ion-label>
                   <ion-radio *ngIf="!admin" mode="md" slot="end" [value]="questionTemp[idx].answers[idy].name"></ion-radio>
                 </ion-item>
               </ion-radio-group>
@@ -78,19 +86,21 @@
       </div>
     </div> 
     <div *ngSwitchCase="1">
-      <ion-item-divider>Ergebnisse: </ion-item-divider>
-      <div *ngFor="let count of questionTemp; let idx = index">
+      <ion-item-divider color="primary" no-lines>Ergebnisse:</ion-item-divider>
+      <div *ngFor="let item of this.finalsResults | keyvalue; let idx = index">
         <ion-row>
-          <ion-col size="12">
+          <ion-col size="10">
             <ion-item lines ="full">
-              <ion-label>{{idx + 1}}.{{questionTemp[idx].question}}</ion-label>
+              <ion-label>{{idx + 1}}. {{item.key}}</ion-label>
             </ion-item>
           </ion-col>
         </ion-row>
-        <ion-item *ngFor="let count of questionTemp[idx].answers; let idy = index" lines ="full">
-              <ion-label> {{questionTemp[idx].answers[idy].name}}</ion-label>
-              <ion-label class="alignme">90%</ion-label>
+
+        <ion-item *ngFor="let count of this.finalsResults[item.key]; let idy = index" lines ="full">
+              <ion-label>{{idy + 1}}. {{count.key}}</ion-label>
+              <ion-label class="alignme">{{count.value}}</ion-label>
         </ion-item>
+        <ion-item-divider color="white" no-lines></ion-item-divider>
       </div>
     </div>
   </div>

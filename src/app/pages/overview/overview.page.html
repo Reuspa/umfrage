@@ -6,7 +6,7 @@
     <ion-buttons slot="end">
       <ion-button (click)="addEvent()">
         <ion-icon 
-        name="add-circle-outline">
+        name="add">
         </ion-icon>
       </ion-button>
     </ion-buttons>
@@ -24,6 +24,10 @@
       <ion-card-subtitle>
         {{survey.description}}
       </ion-card-subtitle>
+      <ion-item no-lines>
+        <ion-label>Bis zum: </ion-label>
+        <ion-datetime [disabled] display-format="DD/MM/YYYY" [(ngModel)]="survey.lastDate"></ion-datetime>
+      </ion-item>
     </ion-card-content>
     </ion-card-header>
   </ion-card>

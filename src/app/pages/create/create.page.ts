@@ -14,6 +14,8 @@ export class CreatePage implements OnInit {
   survey: SURVEY = {
     name: '',
     description: '',
+    lastDate: '',
+
   }
   new = true;
   admin = true;
@@ -21,7 +23,7 @@ export class CreatePage implements OnInit {
   title = 'Neue Umfrage';
   view = "0";
   buttonView = false;
-
+  finalsResults = {};
   constructor(
     private loadingController: LoadingController,
     private router: Router,
@@ -36,7 +38,7 @@ export class CreatePage implements OnInit {
         this.questionTemp = JSON.parse(this.survey.questions);
         this.admin = false;
         this.new = false;
-        this.title = this.survey.name;
+        this.title = "Details";
       }
     });
  }
@@ -123,10 +125,15 @@ export class CreatePage implements OnInit {
     return actionSheet.present();
   }
 
-  viewChange(){
+  async viewChange(){
     if(this.view =="0"){
+      await this.ResultTest();
       this.view = "1";
-    }else{this.view = "0";}
+      this.title = "Ergebnisse";
+    }else{
+      this.view = "0";
+      this.title = "Details";
+    }
   }
   adminFlag(){
     this.admin = !this.admin;
@@ -137,10 +144,29 @@ export class CreatePage implements OnInit {
     this.DataService.updateSurvey(this.survey);
   }
   async Log(){
+    console.log(this.survey.lastDate);
     await this.DataService.Log();
   }
   async ResultTest(){
-    await this.DataService.getResults(this.survey);
+
+    let results = await this.DataService.getResults();
+    for ( let temp of results){
+      if ( temp.Id === this.survey.Id){
+        for (const [name, obj] of Object.entries(temp)) {
+          let tempObj = [];
+          if ( name !== "Id"){
+            for (const [key, value] of Object.entries(obj)) {
+              if (key !== "mode" && key !== "count"){
+                // console.log(`${name}: ${key}: ${value}`);
+                tempObj.push({key, value});
+              }
+              this.finalsResults[name] = tempObj;
+            }
+            }
+          }
+        }
+    }
+    console.log('this.finalsResults', this.finalsResults);
   }
   async actionSheet(){
     const actionSheet = document.createElement('ion-action-sheet');
