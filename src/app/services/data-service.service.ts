@@ -1,4 +1,3 @@
-import { ResultPage } from './../pages/result/result.page';
 import { Injectable } from "@angular/core";
 
 export interface SURVEY {
