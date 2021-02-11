@@ -1,9 +1,8 @@
-import { LoadingController, ModalController, NavController } from '@ionic/angular';
+
+import { LoadingController, NavController, } from '@ionic/angular';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { DataService, SURVEY } from './../../services/data-service.service';
-
-
+import { ActivatedRoute, NavigationExtras, Router } from '@angular/router';
+import { DataService, SURVEY } from 'src/app/services/data-service.service';
 
 @Component({
   selector: 'app-create',
@@ -14,198 +13,425 @@ export class CreatePage implements OnInit {
   survey: SURVEY = {
     name: '',
     description: '',
-    lastDate: '',
+    dateEnd: '',
+    dateStart: '',
+  };
 
-  }
   new = true;
   admin = true;
-  questionTemp: any = [{question: '', mode: '3', answers: [{name: 'Ja'}, {name: 'Nein'}], answer: ''}];
+  questionTemp: any = [
+    {
+      question: '',
+      mode: '3',
+      answers: [{ name: 'Ja' }, { name: 'Nein' }],
+      answer: '',
+    },
+  ];
   title = 'Neue Umfrage';
-  view = "0";
+  view = 1;
   buttonView = false;
   finalsResults = {};
+  flags = {
+    new: true,
+    admin: true,
+    buttonView: false,
+    view: 0,
+    nichtOffen: false,
+    laufend: false,
+    beendet: false,
+    editierbar: true,
+  };
+
   constructor(
     private loadingController: LoadingController,
     private router: Router,
     private navController: NavController,
-    private DataService: DataService,
+    private dataService: DataService,
     private route: ActivatedRoute,
-  )   {
-    this.route.queryParams.subscribe(params => {
+  ) {
+    this.route.queryParams.subscribe((params) => {
       if (this.router.getCurrentNavigation().extras.state) {
         this.survey = this.router.getCurrentNavigation().extras.state.SURVEY;
         this.survey = this.getData(this.survey);
+        switch (this.survey.status) {
+          case 'beendet':
+            this.ResultTest();
+            this.flags.view = 1;
+            this.title = 'Ergebnisse';
+            this.flags.new = false;
+            this.flags.view = 1;
+            this.flags.admin = false;
+            break;
+          case 'nichtOffen':
+            this.flags.admin = true;
+            this.flags.new = false;
+            break;
+          case 'laufend':
+            this.flags.admin = true;
+            break;
+        }
         this.questionTemp = JSON.parse(this.survey.questions);
-        this.admin = false;
-        this.new = false;
-        this.title = "Details";
+        // this.flags.admin = false;
+
+        this.title = 'Details';
       }
     });
- }
+  }
 
-  ngOnInit() {
+  ngOnInit() {}
+  
+  checkForInput(){
+    let empty = false;
+    for (const [name, obj] of Object.entries(this.questionTemp)) {
+      for (const [value, key] of Object.entries(obj)) {
+        if ( key === ''){
+          if ( value !== 'answer'){
+            empty = true;
+          }
+        }
+      }
+    }
+    if (this.survey.name === '' || this.survey.name === '' || this.survey.dateEnd === '' || empty) {
+        return false
+      }else{
+        return true
+      }
   }
 
   async save() {
-    const loading = await this.loadingController.create();
-    await loading.present();
-    this.survey.questions = (JSON.stringify(this.questionTemp));
-    if (this.new && this.admin) {
-      await this.DataService.addSurvey(this.survey);
-      await this.DataService.createResult(this.survey);
-      console.log("new add");
-      this.admin = false;
-      if (!this.new){
-      this.navController.navigateBack('/overview');
+    if (this.checkForInput()){
+      console.log("save");
+      const loading = await this.loadingController.create();
+      await loading.present();
+      if (this.flags.new && this.flags.admin) {
+        this.survey.status = 'nichtOffen';
+        this.survey.questions = JSON.stringify(this.questionTemp);
+        await this.dataService.addSurvey(this.survey);
+        await this.dataService.createResult(this.survey);
+        console.log('new add');
+        this.flags.new = false;
+        this.openDetailsWithState(this.survey);
+      } else if (!this.flags.new && this.flags.admin) {
+        await this.dataService.updateSurvey(this.survey);
+        console.log('update Survey');
+        this.flags.admin = false;
+      } else {
+        await this.dataService.addResult(this.questionTemp);
+        console.log('Added Result');
+        this.dataService.user = { [this.survey.Id]: true };
+        this.openDetailsWithState(this.survey);
       }
-      this.new = false;
-    } else if (!this.new && this.admin){
-      await this.DataService.updateSurvey(this.survey);
-      console.log("update Survey");
-      this.admin = false;
-    }else{
-      await this.DataService.addResult(this.questionTemp);
-      console.log("Added Result");
-      this.navController.navigateBack('/overview');
+      loading.dismiss();
+  }else{
+    const alert = document.createElement('ion-alert');
+    alert.header = 'Alert';
+    // alert.subHeader = 'Subtitle';
+    alert.message = 'Es sind nicht alle Felder ausgefüllt !';
+    alert.buttons = ['OK'];
+    document.body.appendChild(alert);
+    return alert.present();
+  }
+  }
+  getData(survey) {
+    let surveyArray;
+    const Arrays = this.dataService.getData();
+    switch (survey.status) {
+      case 'nichtOffen':
+        this.flags.nichtOffen = true;
+        this.flags.beendet = false;
+        this.flags.laufend = false;
+
+        surveyArray = Arrays.first;
+        for (const surveys of surveyArray) {
+          if (surveys.name === survey.name) {
+            // console.log(surveys);
+            return surveys;
+          }
+        }
+        break;
+
+      case 'beendet':
+        this.flags.beendet = true;
+        this.flags.nichtOffen = false;
+        this.flags.laufend = false;
+        (this.flags.editierbar = false), (surveyArray = Arrays.second);
+        for (const surveys of surveyArray) {
+          if (surveys.name === survey.name) {
+            // console.log(surveys);
+            return surveys;
+          }
+        }
+        break;
+
+      case 'laufend':
+        this.flags.beendet = false;
+        this.flags.nichtOffen = false;
+        this.flags.laufend = true;
+        (this.flags.editierbar = false), (surveyArray = Arrays.third);
+        for (const surveys of surveyArray) {
+          if (surveys.name === survey.name) {
+            // console.log(surveys);
+            return surveys;
+          }
+        }
+        break;
+
+      default:
+        return {
+          name: 'Empty',
+          description: '',
+          dateEnd: '',
+          questions: '[]',
+          Id: '',
+        };
     }
-    loading.dismiss();
   }
-  getData(survey){
-    const surveyArray = this.DataService.getData();
-    for (let surveys of surveyArray){
-      if ( surveys.name === survey.name){
-        // console.log(surveys);
-        return surveys
-      }
+
+  addQuestion(mode) {
+    switch (mode) {
+      case '1':
+        this.questionTemp.push({ question: '', mode: '1', answers: '' });
+        break;
+      case '2':
+        this.questionTemp.push({
+          question: '',
+          mode: '2',
+          answers: [
+            { name: '', answer: 'false' },
+            { name: '', answer: 'false' },
+            { name: '', answer: 'false' },
+          ],
+        });
+        break;
+      case '3':
+        this.questionTemp.push({
+          question: '',
+          mode: '3',
+          answers: [{ name: 'Ja' }, { name: 'Nein' }],
+          answer: '',
+        });
+        break;
     }
-    console.log(surveyArray);
   }
-
-  addQuestion(mode){
-    switch (mode){
-      case '1': this.questionTemp.push({question: '', mode: '1', answers: ''}); break;
-      case '2': this.questionTemp.push({question: '', mode: '2', answers: [{name: '', answer: 'false'}, {name: '', answer: 'false'}, {name: '', answer: 'false'}]}); break;
-      case '3': this.questionTemp.push({question: '', mode: '3', answers: [{name: 'Ja'}, {name: 'Nein'}], answer: ''}); break;
+  addAnswers(idx) {
+    this.questionTemp[idx].answers.push({ name: '', answer: '' });
+  }
+  removeAnswers(idx) {
+    if (this.questionTemp[idx].answers.length > 2) {
+      this.questionTemp[idx].answers.pop();
+    } else {
+      console.log('mindest Anzahl an fragen erreicht');
     }
-    // this.questionTemp.push({question:'', mode: '', answers: [{name: '', answer: ''}]});
-    // console.log(this.questionTemp);
   }
-  addAnswers(idx){
-    this.questionTemp[idx].answers.push({name: '', answer: ''});
-  }
-  removeAnswers(idx){
-    // console.log(this.questionTemp[idx]);
-    // this.questionTemp[idx].answers.splice(idy,1);
-    // console.log(this.questionTemp[idx]);
-    this.questionTemp[idx].answers.pop();
-  }
-  removeQuestion(idx){
-    const actionSheet = document.createElement('ion-action-sheet');
-
-    actionSheet.header = 'Löschen';
-    actionSheet.buttons = [{
-      text: 'Löschen',
-      icon: 'trash',
-      cssClass: 'test',
-
-      handler: () => {
-        console.log('Added ja/nein');
-        this.questionTemp.splice(idx, 1);
-      }
-    },
-    {
-      text: 'Abbruch',
-      icon: 'close',
-      role: 'cancel',
-      handler: () => {
-        console.log('Cancel clicked');
-      }
-    }];
-    document.body.appendChild(actionSheet);
-    return actionSheet.present();
-  }
-
-  async viewChange(){
-    if(this.view =="0"){
+  async viewChange() {
+    if (this.view === 0) {
       await this.ResultTest();
-      this.view = "1";
-      this.title = "Ergebnisse";
-    }else{
-      this.view = "0";
-      this.title = "Details";
+      this.view = 1;
+      this.title = 'Ergebnisse';
+    } else {
+      this.view = 0;
+      this.title = 'Details';
     }
   }
-  adminFlag(){
-    this.admin = !this.admin;
+  adminFlag() {
+    this.flags.admin = !this.flags.admin;
   }
-  updateSurvey(){
-    console.log("update");
-    this.survey.questions = (JSON.stringify(this.questionTemp));
-    this.DataService.updateSurvey(this.survey);
+  updateSurvey() {
+    console.log('Update');
+    this.survey.questions = JSON.stringify(this.questionTemp);
+    this.dataService.updateSurvey(this.survey);
   }
-  async Log(){
-    console.log(this.survey.lastDate);
-    await this.DataService.Log();
+  async Log() {
+    console.log(this.survey.dateEnd);
+    await this.dataService.Log();
   }
-  async ResultTest(){
-
-    let results = await this.DataService.getResults();
-    for ( let temp of results){
-      if ( temp.Id === this.survey.Id){
+  async ResultTest() {
+    const results = await this.dataService.getResults();
+    for (const temp of results) {
+      if (temp.Id === this.survey.Id) {
         for (const [name, obj] of Object.entries(temp)) {
-          let tempObj = [];
-          if ( name !== "Id"){
+          const tempObj = [];
+          if (name !== 'Id') {
             for (const [key, value] of Object.entries(obj)) {
-              if (key !== "mode" && key !== "count"){
-                // console.log(`${name}: ${key}: ${value}`);
-                tempObj.push({key, value});
+              if (key !== 'mode' && key !== 'count') {
+                tempObj.push({ key, value });
+              }
+              if (key === 'count') {
+                console.log(`${name}: ${key}: ${value}`);
               }
               this.finalsResults[name] = tempObj;
             }
-            }
           }
         }
+      }
     }
-    console.log('this.finalsResults', this.finalsResults);
+    // console.log('this.finalsResults', this.finalsResults);
   }
-  async actionSheet(){
+
+  logOut() {
+    console.log(JSON.stringify(this.survey));
+  }
+
+  openDetailsWithState(survey) {
+    const navigationExtras: NavigationExtras = {
+      state: {
+        SURVEY: survey,
+      },
+    };
+    this.router.navigate(['create'], navigationExtras);
+  }
+  //  ACTION SHEETS
+  deleteSurvey() {
+    const actionSheet = document.createElement('ion-action-sheet');
+
+    actionSheet.header = 'Löschen';
+    actionSheet.buttons = [
+      {
+        text: 'Löschen',
+        icon: 'trash',
+        cssClass: 'test',
+
+        handler: () => {
+          console.log('Added ja/nein');
+          this.dataService.deleteSurvey(this.survey);
+          this.navController.navigateBack('/overview');
+        },
+      },
+      {
+        text: 'Abbruch',
+        icon: 'close',
+        role: 'cancel',
+        handler: () => {
+          console.log('Cancel clicked');
+        },
+      },
+    ];
+    document.body.appendChild(actionSheet);
+    return actionSheet.present();
+  }
+  async fragenArtAuswahl() {
     const actionSheet = document.createElement('ion-action-sheet');
 
     actionSheet.header = 'Frage Hinzufügen';
     actionSheet.buttons = [
       {
-        text: 'Auswahl Frage',
+        text: 'Einfache Auswahl',
         icon: 'add-circle-outline',
         handler: () => {
           console.log('Play clicked');
           this.addQuestion('3');
-        }
+        },
       },
-    //   {
-    //   text: 'Ja/Nein Frage',
-    //   icon: 'add-circle-outline',
-    //   handler: () => {
-    //     console.log('Added ja/nein');
-    //     this.addQuestion('1');
-    //   }
-    // },
-     {
-      text: 'Multiply Choice',
-      icon: 'add-circle-outline',
-      handler: () => {
-        console.log('Multiply Choice');
-        this.addQuestion('2');
-      }
-    }, 
-    {
-      text: 'Abbruch',
-      icon: 'close',
-      role: 'cancel',
-      handler: () => {
-        console.log('Cancel clicked');
-      }
-    }];
+      {
+        text: 'Mehrfache Auswahl',
+        icon: 'add-circle-outline',
+        handler: () => {
+          console.log('Multiply Choice');
+          this.addQuestion('2');
+        },
+      },
+      {
+        text: 'Abbruch',
+        icon: 'close',
+        role: 'cancel',
+        handler: () => {
+          console.log('Cancel clicked');
+        },
+      },
+    ];
     document.body.appendChild(actionSheet);
     return actionSheet.present();
-    }
+  }
+  beenden() {
+    const actionSheet = document.createElement('ion-action-sheet');
+
+    actionSheet.header = 'Beenden';
+    actionSheet.buttons = [
+      {
+        text: 'Jetzt Beenden',
+        icon: 'alert',
+        cssClass: 'test',
+
+        handler: () => {
+          console.log('Umfrage beendet');
+          this.dataService.beenden(this.survey);
+          this.navController.navigateBack('/overview');
+        },
+      },
+      {
+        text: 'Abbruch',
+        icon: 'close',
+        role: 'cancel',
+        handler: () => {
+          console.log('Cancel clicked');
+        },
+      },
+    ];
+    document.body.appendChild(actionSheet);
+    return actionSheet.present();
+  }
+  publish() {
+    const actionSheet = document.createElement('ion-action-sheet');
+
+    actionSheet.header = 'Veröffentlichen';
+    actionSheet.buttons = [
+      {
+        text: 'Jetzt Veröffentlichen',
+        icon: 'checkmark',
+        cssClass: 'test',
+
+        handler: () => {
+          let d = new Date()
+          this.survey.dateStart = d.toString();
+          console.log('Veröffentlichen');
+          this.save();
+          this.dataService.publish(this.survey);
+          this.navController.navigateBack('/overview');
+        },
+      },
+      {
+        text: 'Später Veröffentlichen ',
+        icon: 'alarm',
+        handler: () => {
+          console.log('Später clicked');
+        },
+      },
+      {
+        text: 'Abbruch',
+        icon: 'close',
+        role: 'cancel',
+        handler: () => {
+          console.log('Cancel clicked');
+        },
+      },
+    ];
+    document.body.appendChild(actionSheet);
+    return actionSheet.present();
+  }
+  removeQuestion(idx) {
+    const actionSheet = document.createElement('ion-action-sheet');
+    actionSheet.header = 'Löschen';
+    actionSheet.buttons = [
+      {
+        text: 'Löschen',
+        icon: 'trash',
+        cssClass: 'test',
+
+        handler: () => {
+          console.log('Added ja/nein');
+          this.questionTemp.splice(idx, 1);
+        },
+      },
+      {
+        text: 'Abbruch',
+        icon: 'close',
+        role: 'cancel',
+        handler: () => {
+          console.log('Cancel clicked');
+        },
+      },
+    ];
+    document.body.appendChild(actionSheet);
+    return actionSheet.present();
+  }
 }

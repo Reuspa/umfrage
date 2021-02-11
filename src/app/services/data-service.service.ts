@@ -6,7 +6,9 @@ export interface SURVEY {
   description: string;
   questions?: string;
   Id?: string;
-  lastDate?: any;
+  dateEnd?: any;
+  dateStart?: any;
+  status?: any;
 }
 
 @Injectable({
@@ -14,27 +16,83 @@ export interface SURVEY {
 })
 export class DataService {
   survey: SURVEY = {
-    name: "",
-    description: "",
+    name: '',
+    description: '',
   };
-  surveyArray = [{"name":"Dinnerparty","description":"Umfrage zur Dinnerparty am 30/02/2021","questions":"[{\"question\":\"Gang Auswahl \",\"mode\":\"2\",\"answers\":[{\"name\":\"Vorspeise\",\"answer\":\"false\"},{\"name\":\"Hauptspeise\",\"answer\":\"false\"},{\"name\":\"Dessert\",\"answer\":\"false\"}]},{\"question\":\"Hauptgericht\",\"mode\":\"3\",\"answers\":[{\"name\":\"Fisch\"},{\"name\":\"Rind\"},{\"name\":\"Vegetarisch\",\"answer\":\"\"},{\"name\":\"Vegan\",\"answer\":\"\"}],\"answer\":\"\"},{\"question\":\"Alkohol ?\",\"mode\":\"3\",\"answers\":[{\"name\":\"Ja\"},{\"name\":\"Nein\"}],\"answer\":\"\"}]","Id":"_o5yjb70g5","lastDate":"2021-02-23T12:33:56.458+01:00"}];
+  archiviert = ""
+  nichtOffentArray = [{"name":"Nicht Veröffentlicht","status":"nichtOffen","description":"Eine nicht veröffentliche Umfrage","dateEnd":"2021-02-13T14:00:14.629+01:00","dateStart":"2021-02-11T12:37:14.628+01:00","questions":"[{\"question\":\"Ja / Nein\",\"mode\":\"3\",\"answers\":[{\"name\":\"Ja\"},{\"name\":\"Nein\"}],\"answer\":\"\"}]","Id":"_cevf8kwrt"}];
+  beendetArray = [{"name":"beendete Umfrage","status":"beendet","description":"Eine beendete Umfrage","dateEnd":"2021-02-13T14:00:14.629+01:00","dateStart":"2021-02-11T13:00:14.628+01:00","questions":"[{\"question\":\"Ja / Nein\",\"mode\":\"3\",\"answers\":[{\"name\":\"Ja\"},{\"name\":\"Nein\"}],\"answer\":\"\"}]","Id":"_o5yjb70g5"}];
+  laufendArray = [{"name":"Dinnerparty","status":"laufend","description":"Umfrage zur Dinnerparty am 30/02/2021","questions":"[{\"question\":\"Gänge-Auswahl\",\"mode\":\"2\",\"answers\":[{\"name\":\"Vorspeise\",\"answer\":\"false\"},{\"name\":\"Hauptspeise\",\"answer\":\"false\"},{\"name\":\"Dessert\",\"answer\":\"false\"}]},{\"question\":\"Hauptgericht\",\"mode\":\"3\",\"answers\":[{\"name\":\"Fisch\"},{\"name\":\"Rind\"},{\"name\":\"Vegetarisch\",\"answer\":\"\"},{\"name\":\"Vegan\",\"answer\":\"\"}],\"answer\":\"\"},{\"question\":\"Alkohol ?\",\"mode\":\"3\",\"answers\":[{\"name\":\"Ja\"},{\"name\":\"Nein\"}],\"answer\":\"\"}]","Id":"_o5yjb70g5","dateEnd":"2021-02-11T15:00:14.629+01:00","dateStart":"2021-02-10T13:00:14.628+01:00"}];
+  // surveyArray = [{"name":"Dinnerparty","description":"Umfrage zur Dinnerparty am 30/02/2021","questions":"[{\"question\":\"Gänge-Auswahl\",\"mode\":\"2\",\"answers\":[{\"name\":\"Vorspeise\",\"answer\":\"false\"},{\"name\":\"Hauptspeise\",\"answer\":\"false\"},{\"name\":\"Dessert\",\"answer\":\"false\"}]},{\"question\":\"Hauptgericht\",\"mode\":\"3\",\"answers\":[{\"name\":\"Fisch\"},{\"name\":\"Rind\"},{\"name\":\"Vegetarisch\",\"answer\":\"\"},{\"name\":\"Vegan\",\"answer\":\"\"}],\"answer\":\"\"},{\"question\":\"Alkohol ?\",\"mode\":\"3\",\"answers\":[{\"name\":\"Ja\"},{\"name\":\"Nein\"}],\"answer\":\"\"}]","Id":"_o5yjb70g5","lastDate":"2021-02-23T12:33:56.458+01:00"}];
 
-
-  result = [{"Id":"_o5yjb70g5","Gang Auswahl ":{"mode":"2","count":0,"Vorspeise":0,"Hauptspeise":0,"Dessert":0},"Alkohol ?":{"mode":"3","Ja":0,"Nein":0},"Hauptgericht":{"mode":"3","count":0,"Fisch":0,"Rind":0,"Vegetarisch":0,"Vegan":0}}];
+  result = [{"Id":"_o5yjb70g5","Gänge-Auswahl":{"mode":"2","count":0,"Vorspeise":0,"Hauptspeise":0,"Dessert":0},"Alkohol ?":{"mode":"3","Ja":0,"Nein":0},"Hauptgericht":{"mode":"3","count":0,"Fisch":0,"Rind":0,"Vegetarisch":0,"Vegan":0}}];
+  user: any = {};
+  
   constructor() {}
-
   getData() {
-    return this.surveyArray;
+    return {
+      first: this.nichtOffentArray,
+      second: this.beendetArray,
+      third: this.laufendArray,
+    };
   }
   addSurvey(survey) {
     survey.Id = '_' + Math.random().toString(36).substr(2, 9);
-    this.surveyArray.push(survey);
+    this.nichtOffentArray.push(survey);
+  }
+  deleteSurvey(survey) {
+    this.laufendArray.forEach(function(value, index, object) {
+      if (value.Id === survey.Id) {
+        object.splice(index, 1);
+      }
+    });
   }
   updateSurvey(survey) {
-    this.surveyArray.forEach(function (value, index, object) {
+    switch (survey.status){
+      case 'nichtOffen':
+      this.nichtOffentArray.forEach(function (value, index, object) {
+        if (value.Id === survey.Id) {
+          // console.log(object[index]);
+          object[index] = survey;
+        }
+      });
+      break;
+
+      case 'beendet':
+      this.beendetArray.forEach(function (value, index, object) {
+        if (value.Id === survey.Id) {
+          // console.log(object[index]);
+          object[index] = survey;
+        }
+      });
+      break;
+      case 'laufend':
+      this.laufendArray.forEach(function (value, index, object) {
+        if (value.Id === survey.Id) {
+          // console.log(object[index]);
+          object[index] = survey;
+        }
+      });
+      break;
+      default:
+        console.log("Error in Update Survey");
+    }
+  }
+  publish(survey){
+    survey.status = 'laufend';
+    this.laufendArray.push(survey)
+    this.nichtOffentArray.forEach(function(value, index, object) {
       if (value.Id === survey.Id) {
-        console.log(object[index]);
-        object[index] = survey;
+        object.splice(index, 1);
+      }
+    });
+  }
+  beenden(survey){
+    survey.status = 'beendet';
+    this.beendetArray.push(survey);
+    this.laufendArray.forEach(function(value, index, object) {
+      if (value.Id === survey.Id) {
+        object.splice(index, 1);
       }
     });
   }
@@ -80,24 +138,27 @@ export class DataService {
       if ( temp.mode === "2"){
         this.result.forEach(function (value, index, object){
           if (temp.question in value){
+            for(let i of temp.answers){
+              for (const [key, value] of Object.entries(i)) {
+                  console.log(`${key}: ${value}`);
+                }
+            }
             console.log("value", value);
             console.log("temp", temp);
-            console.log('isin :', value[temp.answers]);
+            console.log('value[temp.question][temp.answers] :', value[temp.question][temp.answers]);
            }
-          console.log('value:', temp.question);
+          console.log('temp.question:', temp.question);
         });
-        
       }
   }
-    console.log(this.result);
   }
 
   getResults() {
     return this.result;
   }
   Log() {
-    console.log("array", JSON.stringify(this.surveyArray));
+    console.log("array", JSON.stringify(this.laufendArray));
     console.log("result", JSON.stringify(this.result));
+    console.log('user: ', this.user);
   }
-  testMode1() {}
 }

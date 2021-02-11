@@ -14,19 +14,59 @@
 </ion-header>
 
 <ion-content>
-  <ion-card *ngFor="let survey of surveyArray" (click)="openDetailsWithState(survey)"> 
+  <ion-item-divider color="medium" no-lines> nicht veröffentlich</ion-item-divider>
+  <ion-card *ngFor="let survey of nichtOffentArray" (click)="openDetailsWithState(survey)"> 
     <ion-card-header>
       <ion-card-title>
         <ion-icon name="help"></ion-icon>
         {{survey.name}}
+        <!-- <ion-icon color="success" name="checkmark-circle-outline"></ion-icon> -->
       </ion-card-title>
     <ion-card-content>
       <ion-card-subtitle>
         {{survey.description}}
       </ion-card-subtitle>
       <ion-item no-lines>
-        <ion-label>Bis zum: </ion-label>
-        <ion-datetime [disabled] display-format="DD/MM/YYYY" [(ngModel)]="survey.lastDate"></ion-datetime>
+        <ion-label>Start:</ion-label>
+        <ion-datetime readonly display-format="DD/MM/YYYY-HH:mm" [(ngModel)]="survey.dateStart"></ion-datetime>
+      </ion-item>
+    </ion-card-content>
+    </ion-card-header>
+  </ion-card>
+  <ion-item-divider color="success" no-lines> beendet</ion-item-divider>
+  <ion-card *ngFor="let survey of beendetArray" (click)="openDetailsWithState(survey)"> 
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="help"></ion-icon>
+        {{survey.name}}
+        <!-- <ion-icon color="success" name="checkmark-circle-outline"></ion-icon> -->
+      </ion-card-title>
+    <ion-card-content>
+      <ion-card-subtitle>
+        {{survey.description}}
+      </ion-card-subtitle>
+      <ion-item no-lines>
+        <ion-label>Beendet</ion-label>
+        <!-- <ion-datetime [disabled] display-format="DD/MM/YYYY-HH:mm" [(ngModel)]="survey.dateEnd"></ion-datetime> -->
+      </ion-item>
+    </ion-card-content>
+    </ion-card-header>
+  </ion-card>
+  <ion-item-divider color="primary" no-lines> Laufend</ion-item-divider>
+  <ion-card *ngFor="let survey of laufendArray" (click)="openDetailsWithState(survey)"> 
+    <ion-card-header>
+      <ion-card-title>
+        <ion-icon name="help"></ion-icon>
+        {{survey.name}}
+        <!-- <ion-icon color="success" name="checkmark-circle-outline"></ion-icon> -->
+      </ion-card-title>
+    <ion-card-content>
+      <ion-card-subtitle>
+        {{survey.description}}
+      </ion-card-subtitle>
+      <ion-item no-lines>
+        <ion-label>Endet: </ion-label>
+        <ion-datetime readonly display-format="DD/MM/YYYY-HH:mm" [(ngModel)]="survey.dateEnd"></ion-datetime>
       </ion-item>
     </ion-card-content>
     </ion-card-header>
