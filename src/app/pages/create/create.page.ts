@@ -27,6 +27,8 @@ export class CreatePage implements OnInit {
       answer: '',
     },
   ];
+  voteCount;
+  percentView = false;
   title = 'Neue Umfrage';
   view = 1;
   buttonView = false;
@@ -68,6 +70,7 @@ export class CreatePage implements OnInit {
             break;
           case 'laufend':
             this.flags.admin = true;
+            this.flags.new = false;
             break;
         }
         this.questionTemp = JSON.parse(this.survey.questions);
@@ -79,7 +82,7 @@ export class CreatePage implements OnInit {
   }
 
   ngOnInit() {}
-  
+
   checkForInput(){
     let empty = false;
     for (const [name, obj] of Object.entries(this.questionTemp)) {
@@ -92,15 +95,29 @@ export class CreatePage implements OnInit {
       }
     }
     if (this.survey.name === '' || this.survey.name === '' || this.survey.dateEnd === '' || empty) {
-        return false
+        return false;
       }else{
-        return true
+        return true;
       }
+  }
+  checkQuestionsForInput(){
+    const empty = false;
+
+    for (const [name, obj] of Object.entries(this.questionTemp)) {
+      for (const [value, key] of Object.entries(obj)) {
+        if ( value === 'answer'){
+          if ( key === ''){
+            return false;
+          }
+        }
+      }
+    }
+    return true;
   }
 
   async save() {
     if (this.checkForInput()){
-      console.log("save");
+      // console.log("save");
       const loading = await this.loadingController.create();
       await loading.present();
       if (this.flags.new && this.flags.admin) {
@@ -110,22 +127,33 @@ export class CreatePage implements OnInit {
         await this.dataService.createResult(this.survey);
         console.log('new add');
         this.flags.new = false;
-        this.openDetailsWithState(this.survey);
-      } else if (!this.flags.new && this.flags.admin) {
-        await this.dataService.updateSurvey(this.survey);
-        console.log('update Survey');
-        this.flags.admin = false;
+        this.router.navigate(['overview']);
+      } else if (!this.flags.new && this.flags.admin && !this.flags.laufend) {
+          this.survey.questions = JSON.stringify(this.questionTemp);
+          await this.dataService.updateSurvey(this.survey);
+          await this.dataService.updateResults(this.survey);
+          console.log('update Survey');
+          // this.flags.admin = false;
       } else {
-        await this.dataService.addResult(this.questionTemp);
-        console.log('Added Result');
-        this.dataService.user = { [this.survey.Id]: true };
-        this.openDetailsWithState(this.survey);
+          if( this.checkQuestionsForInput()){
+          await this.dataService.addResult(this.questionTemp);
+          console.log('Added Result');
+          this.dataService.user = { [this.survey.Id]: true };
+          this.router.navigate(['overview']);
+          }else{
+            loading.dismiss();
+            const alert = document.createElement('ion-alert');
+            alert.header = 'Alert';
+            alert.message = 'Es sind nicht alle Fragen beantwortet !';
+            alert.buttons = ['OK'];
+            document.body.appendChild(alert);
+            return alert.present();
+          }
       }
       loading.dismiss();
   }else{
     const alert = document.createElement('ion-alert');
     alert.header = 'Alert';
-    // alert.subHeader = 'Subtitle';
     alert.message = 'Es sind nicht alle Felder ausgefüllt !';
     alert.buttons = ['OK'];
     document.body.appendChild(alert);
@@ -144,7 +172,6 @@ export class CreatePage implements OnInit {
         surveyArray = Arrays.first;
         for (const surveys of surveyArray) {
           if (surveys.name === survey.name) {
-            // console.log(surveys);
             return surveys;
           }
         }
@@ -197,9 +224,9 @@ export class CreatePage implements OnInit {
           question: '',
           mode: '2',
           answers: [
-            { name: '', answer: 'false' },
-            { name: '', answer: 'false' },
-            { name: '', answer: 'false' },
+            { ['']: 'false' },
+            { ['']: 'false' },
+            { ['']: 'false' },
           ],
         });
         break;
@@ -241,35 +268,47 @@ export class CreatePage implements OnInit {
     this.survey.questions = JSON.stringify(this.questionTemp);
     this.dataService.updateSurvey(this.survey);
   }
-  async Log() {
-    console.log(this.survey.dateEnd);
-    await this.dataService.Log();
+  async archivieren(){
+    await this.dataService.archivieren(this.survey);
+    this.router.navigate(['overview']);
   }
+
   async ResultTest() {
     const results = await this.dataService.getResults();
     for (const temp of results) {
       if (temp.Id === this.survey.Id) {
         for (const [name, obj] of Object.entries(temp)) {
-          const tempObj = [];
+          const tempObj: any = [];
           if (name !== 'Id') {
             for (const [key, value] of Object.entries(obj)) {
+
               if (key !== 'mode' && key !== 'count') {
-                tempObj.push({ key, value });
+                if(obj['mode']=== '2'){
+                  tempObj.push({ key, value });
+                }
+                if(obj['mode']=== '3'){
+                  tempObj.push({ key, value });
+                }
               }
               if (key === 'count') {
-                console.log(`${name}: ${key}: ${value}`);
+                this.voteCount = value;
               }
-              this.finalsResults[name] = tempObj;
             }
+            // Sort finalsResults most votes to least
+            tempObj.sort((a,b) => (a.value.number > b.value.number) ? -1 : ((b.value.number > a.value.number) ? 1 : 0));
+            this.finalsResults[name] = tempObj;
+            // console.log('finaleResult', this.finalsResults);
           }
         }
       }
     }
-    // console.log('this.finalsResults', this.finalsResults);
   }
 
   logOut() {
-    console.log(JSON.stringify(this.survey));
+    this.dataService.Log();
+  }
+  logFlags(){
+    console.log(this.flags);
   }
 
   openDetailsWithState(survey) {
@@ -354,6 +393,8 @@ export class CreatePage implements OnInit {
 
         handler: () => {
           console.log('Umfrage beendet');
+          let d = new Date()
+          this.survey.dateEnd = d.toString();
           this.dataService.beenden(this.survey);
           this.navController.navigateBack('/overview');
         },
@@ -387,13 +428,6 @@ export class CreatePage implements OnInit {
           this.save();
           this.dataService.publish(this.survey);
           this.navController.navigateBack('/overview');
-        },
-      },
-      {
-        text: 'Später Veröffentlichen ',
-        icon: 'alarm',
-        handler: () => {
-          console.log('Später clicked');
         },
       },
       {
